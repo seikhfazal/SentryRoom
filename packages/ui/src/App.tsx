@@ -49,7 +49,8 @@ function Shell() {
   const [status, setStatus] = useState<Status>(fallbackStatus);
   const [events, setEvents] = useState<EventLog[]>([]);
   const [connected, setConnected] = useState(false);
-  const isMobileRoute = location.pathname === "/mobile";
+  const currentPath = location.pathname.replace(/\/$/, "") || "/";
+  const isMobileRoute = currentPath === "/mobile";
 
   const refresh = () => {
     api.status().then((next) => { setStatus(next); setConnected(true); }).catch(() => setConnected(false));
@@ -67,7 +68,7 @@ function Shell() {
     return () => { window.clearTimeout(timer); socket?.close(); };
   }, []);
 
-  if (isMobileRoute) return <Routes><Route path="/mobile" element={<MobileControl status={status} refresh={refresh} connected={connected} />} /></Routes>;
+  if (isMobileRoute) return <Routes><Route path="/mobile/*" element={<MobileControl status={status} refresh={refresh} connected={connected} />} /></Routes>;
 
   return (
     <div className="app-shell">
