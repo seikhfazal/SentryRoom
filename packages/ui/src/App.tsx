@@ -37,6 +37,13 @@ const fallbackStatus: Status = {
   message: "Offline or disconnected"
 };
 
+function routerBasename() {
+  const meta = import.meta as unknown as { env?: { BASE_URL?: string } };
+  const baseUrl = meta.env?.BASE_URL || "/";
+  const normalized = baseUrl.replace(/\/$/, "");
+  return normalized || undefined;
+}
+
 function Shell() {
   const location = useLocation();
   const [status, setStatus] = useState<Status>(fallbackStatus);
@@ -89,5 +96,5 @@ function Shell() {
 }
 
 export default function App() {
-  return <BrowserRouter><Shell /></BrowserRouter>;
+  return <BrowserRouter basename={routerBasename()}><Shell /></BrowserRouter>;
 }
