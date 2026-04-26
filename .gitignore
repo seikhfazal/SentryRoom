@@ -1,0 +1,16 @@
+.env
+*.db
+*.sqlite
+*.sqlite3
+__pycache__/
+.pytest_cache/
+.venv/
+venv/
+node_modules/
+dist/
+target/
+.DS_Store
+*.log
+apps/web/public/icons/*.tmp
+*.exe
+Arduino IDE/

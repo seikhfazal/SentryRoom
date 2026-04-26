@@ -1,0 +1,23 @@
+#pragma once
+
+#define TOPIC_DEVICE_STATUS "sentinel/device/status"
+#define TOPIC_SENSOR_PIR "sentinel/sensor/pir"
+#define TOPIC_SENSOR_ULTRASONIC "sentinel/sensor/ultrasonic"
+#define TOPIC_SENSOR_IR_BEAM "sentinel/sensor/ir_beam"
+#define TOPIC_SENSOR_DOOR "sentinel/sensor/door"
+#define TOPIC_SENTRY_STATE "sentinel/sentry/state"
+#define TOPIC_EVENT_LOG "sentinel/event/log"
+#define TOPIC_ERROR "sentinel/error"
+
+#define CMD_ARM "sentinel/cmd/arm"
+#define CMD_DISARM "sentinel/cmd/disarm"
+#define CMD_SENTRY_MODE "sentinel/cmd/sentry/mode"
+#define CMD_SENTRY_MOVE "sentinel/cmd/sentry/move"
+#define CMD_SENTRY_CALIBRATE "sentinel/cmd/sentry/calibrate"
+#define CMD_RGB "sentinel/cmd/rgb"
+#define CMD_PSEUDO_LASER "sentinel/cmd/pseudo_laser"
+#define CMD_BUZZER "sentinel/cmd/buzzer"
+#define CMD_LOCK "sentinel/cmd/lock"
+#define CMD_MIST_MANUAL "sentinel/cmd/mist_manual"
+#define CMD_STOP_ALL "sentinel/cmd/stop_all"
+#define CMD_SAFE_MODE "sentinel/cmd/safe_mode"

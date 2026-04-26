@@ -1,0 +1,31 @@
+#pragma once
+
+#define USE_MOCK_SENSORS 1
+#define USE_REAL_SENSORS 0
+#define USE_WIFI_MQTT 1
+#define USE_SERIAL_DEBUG 1
+
+#define DEVICE_ID "sentry-main"
+#define WIFI_SSID "YOUR_WIFI"
+#define WIFI_PASSWORD "YOUR_PASSWORD"
+#define MQTT_HOST "192.168.1.10"
+#define MQTT_PORT 1883
+
+#define PAN_MIN 20
+#define PAN_MAX 160
+#define TILT_MIN 40
+#define TILT_MAX 120
+#define PAN_CENTER 90
+#define TILT_CENTER 80
+#define PSEUDO_LASER_MAX_PWM 80
+#define MQTT_FAILSAFE_MS 5000
+#define MQTT_RECONNECT_MS 3000
+#define SENSOR_PUBLISH_MS 1000
+#define SCAN_STEP_MS 35
+#define DEMO_TIMEOUT_MS 8000
+#define ALERT_TIMEOUT_MS 5000
+#define ULTRASONIC_ALERT_CM 60
+
+#define PIR_ACTIVE_HIGH 1
+#define DOOR_OPEN_HIGH 1
+#define IR_BEAM_BROKEN_HIGH 1
