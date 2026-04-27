@@ -11,11 +11,35 @@ function envValue(key: "VITE_API_BASE_URL" | "VITE_WS_BASE_URL") {
   return meta.env?.[key];
 }
 
+function queryValue(...keys: string[]) {
+  const params = new URLSearchParams(window.location.search);
+  for (const key of keys) {
+    const value = params.get(key)?.trim();
+    if (value) return value;
+  }
+  return "";
+}
+
+function normalizeUrl(url: string) {
+  return url.trim().replace(/\/$/, "");
+}
+
 export function getBackendUrl() {
-  return (localStorage.getItem("sentinel-backend-url") || envValue("VITE_API_BASE_URL") || defaultApiBaseUrl).replace(/\/$/, "");
+  const linkedBackendUrl = queryValue("backend", "api");
+  if (linkedBackendUrl) {
+    const normalized = normalizeUrl(linkedBackendUrl);
+    localStorage.setItem("sentinel-backend-url", normalized);
+    return normalized;
+  }
+  return normalizeUrl(localStorage.getItem("sentinel-backend-url") || envValue("VITE_API_BASE_URL") || defaultApiBaseUrl);
 }
 
 export function getStatusSocketUrl() {
+  const linkedWsUrl = queryValue("ws", "websocket");
+  if (linkedWsUrl) {
+    localStorage.setItem("sentinel-ws-url", linkedWsUrl.trim());
+    return linkedWsUrl.trim();
+  }
   const savedWsUrl = localStorage.getItem("sentinel-ws-url");
   if (savedWsUrl) return savedWsUrl;
   if (localStorage.getItem("sentinel-backend-url")) return getBackendUrl().replace(/^http/, "ws") + "/ws/status";
@@ -23,7 +47,8 @@ export function getStatusSocketUrl() {
 }
 
 export function setBackendUrl(url: string) {
-  localStorage.setItem("sentinel-backend-url", url.replace(/\/$/, ""));
+  localStorage.setItem("sentinel-backend-url", normalizeUrl(url));
+  localStorage.removeItem("sentinel-ws-url");
 }
 
 export function getToken() {
