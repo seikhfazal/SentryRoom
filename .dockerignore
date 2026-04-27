@@ -1,0 +1,13 @@
+.git
+.github
+.pytest_cache
+.venv
+**/node_modules
+**/dist
+**/*.log
+sentinel_room.db
+Docker Desktop Installer.exe
+arduino-ide_*.exe
+Microsoft.Management.Deployment.winmd
+Microsoft.Services.Store.winmd
+wsl-install-admin.log

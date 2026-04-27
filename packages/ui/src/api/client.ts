@@ -3,8 +3,8 @@ import type { CalibrationPoint, EventLog, SentryState, SentryUnit, Status } from
 const tokenKey = "sentinel-room-token";
 const authEventName = "sentinel-room-auth-change";
 
-const defaultApiBaseUrl = "http://localhost:8000";
-const defaultWsBaseUrl = "ws://localhost:8000/ws/status";
+const localApiBaseUrl = "http://localhost:8000";
+const localWsBaseUrl = "ws://localhost:8000/ws/status";
 
 function envValue(key: "VITE_API_BASE_URL" | "VITE_WS_BASE_URL") {
   const meta = import.meta as unknown as { env?: Record<string, string | undefined> };
@@ -24,6 +24,18 @@ function normalizeUrl(url: string) {
   return url.trim().replace(/\/$/, "");
 }
 
+function sameHostApiBaseUrl() {
+  const { hostname, protocol } = window.location;
+  if (protocol === "http:" && hostname && hostname !== "localhost" && hostname !== "127.0.0.1") {
+    return `http://${hostname}:8000`;
+  }
+  return localApiBaseUrl;
+}
+
+function sameHostWsBaseUrl() {
+  return sameHostApiBaseUrl().replace(/^http/, "ws") + "/ws/status";
+}
+
 export function getBackendUrl() {
   const linkedBackendUrl = queryValue("backend", "api");
   if (linkedBackendUrl) {
@@ -31,7 +43,7 @@ export function getBackendUrl() {
     localStorage.setItem("sentinel-backend-url", normalized);
     return normalized;
   }
-  return normalizeUrl(localStorage.getItem("sentinel-backend-url") || envValue("VITE_API_BASE_URL") || defaultApiBaseUrl);
+  return normalizeUrl(localStorage.getItem("sentinel-backend-url") || envValue("VITE_API_BASE_URL") || sameHostApiBaseUrl());
 }
 
 export function getStatusSocketUrl() {
@@ -43,7 +55,7 @@ export function getStatusSocketUrl() {
   const savedWsUrl = localStorage.getItem("sentinel-ws-url");
   if (savedWsUrl) return savedWsUrl;
   if (localStorage.getItem("sentinel-backend-url")) return getBackendUrl().replace(/^http/, "ws") + "/ws/status";
-  return envValue("VITE_WS_BASE_URL") || defaultWsBaseUrl;
+  return envValue("VITE_WS_BASE_URL") || sameHostWsBaseUrl();
 }
 
 export function setBackendUrl(url: string) {
