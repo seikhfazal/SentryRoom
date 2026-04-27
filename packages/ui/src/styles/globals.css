@@ -220,6 +220,14 @@ input:focus {
   width: 100%;
   min-height: 50px;
 }
+.backend-target-editor {
+  display: grid;
+  gap: 10px;
+  padding-top: 4px;
+}
+.backend-target-editor .control-button {
+  width: 100%;
+}
 .preview-link {
   border: 1px solid transparent;
   border-radius: 8px;

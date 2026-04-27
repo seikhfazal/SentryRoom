@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
-import { LockKeyhole, Radar, ShieldCheck, Wifi, WifiOff } from "lucide-react";
-import { api, getBackendUrl } from "../api/client";
+import { Link, LockKeyhole, Radar, ShieldCheck, Wifi, WifiOff } from "lucide-react";
+import { api, getBackendUrl, setBackendUrl } from "../api/client";
 import type { Status } from "../api/types";
 
 export function LoginGate({
@@ -17,8 +17,19 @@ export function LoginGate({
   mobile?: boolean;
 }) {
   const [pin, setPin] = useState("");
+  const [backendTarget, setBackendTarget] = useState(getBackendUrl());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
+  const saveBackendTarget = () => {
+    const nextTarget = backendTarget.trim();
+    if (!nextTarget) {
+      setError("Enter a backend URL.");
+      return;
+    }
+    setBackendUrl(nextTarget);
+    window.location.reload();
+  };
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -91,6 +102,22 @@ export function LoginGate({
           <LockKeyhole size={18} />
           {busy ? "Checking" : "Unlock Console"}
         </button>
+        <div className="backend-target-editor">
+          <label>
+            <span>Backend URL</span>
+            <input
+              type="url"
+              inputMode="url"
+              value={backendTarget}
+              onChange={(event) => setBackendTarget(event.target.value)}
+              placeholder="https://your-demo-backend.onrender.com"
+            />
+          </label>
+          <button className="control-button" type="button" onClick={saveBackendTarget}>
+            <Link size={17} />
+            Use Backend
+          </button>
+        </div>
         {!connected && onPreview && (
           <button className="preview-link" type="button" onClick={onPreview}>
             View offline demo preview
