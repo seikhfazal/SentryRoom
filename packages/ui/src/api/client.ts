@@ -1,6 +1,7 @@
 import type { CalibrationPoint, EventLog, SentryState, SentryUnit, Status } from "./types";
 
 const tokenKey = "sentinel-room-token";
+const authEventName = "sentinel-room-auth-change";
 
 const defaultApiBaseUrl = "http://localhost:8000";
 const defaultWsBaseUrl = "ws://localhost:8000/ws/status";
@@ -31,6 +32,12 @@ export function getToken() {
 
 export function setToken(token: string) {
   localStorage.setItem(tokenKey, token);
+  window.dispatchEvent(new Event(authEventName));
+}
+
+export function clearToken() {
+  localStorage.removeItem(tokenKey);
+  window.dispatchEvent(new Event(authEventName));
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -39,6 +46,9 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
   if (token) headers.set("Authorization", `Bearer ${token}`);
   const response = await fetch(`${getBackendUrl()}${path}`, { ...options, headers });
+  if (response.status === 401) {
+    clearToken();
+  }
   if (!response.ok) throw new Error(await response.text());
   return response.json();
 }
@@ -50,6 +60,13 @@ export const api = {
     const result = await request<{ token: string }>("/api/auth/login", { method: "POST", body: JSON.stringify({ pin }) });
     setToken(result.token);
     return result;
+  },
+  logout: async () => {
+    try {
+      await request<{ ok: boolean }>("/api/auth/logout", { method: "POST" });
+    } finally {
+      clearToken();
+    }
   },
   arm: () => request("/api/arm", { method: "POST" }),
   disarm: () => request("/api/disarm", { method: "POST" }),

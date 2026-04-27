@@ -3,7 +3,20 @@ from ..config import get_settings
 from ..models import Status, SystemState, SentryState
 
 
-_status = Status(mock_mode=get_settings().mock_mode)
+def _initial_status() -> Status:
+    settings = get_settings()
+    if settings.public_demo:
+        return Status(
+            system_state=SystemState.SAFE_MODE,
+            sentry_state=SentryState.IDLE,
+            device_online=True,
+            mock_mode=True,
+            message="Online Demo Mode — No hardware connected.",
+        )
+    return Status(mock_mode=settings.is_mock_mode, device_online=settings.is_mock_mode)
+
+
+_status = _initial_status()
 
 
 def get_status() -> Status:
@@ -14,12 +27,13 @@ def update_status(**changes) -> Status:
     global _status
     data = _status.model_dump()
     data.update(changes)
+    data["mock_mode"] = get_settings().is_mock_mode
     _status = Status(**data)
     return get_status()
 
 
 def arm() -> Status:
-    return update_status(system_state=SystemState.ARMED, message="Sentry active")
+    return update_status(system_state=SystemState.ARMED, device_online=True, message="Sentry active")
 
 
 def disarm() -> Status:
@@ -27,11 +41,11 @@ def disarm() -> Status:
 
 
 def lock() -> Status:
-    return update_status(system_state=SystemState.LOCKDOWN, message="Manual lockdown")
+    return update_status(system_state=SystemState.LOCKDOWN, door_open=False, device_online=True, message="Manual lockdown")
 
 
 def unlock() -> Status:
-    return update_status(system_state=SystemState.ARMED, message="Lock released")
+    return update_status(system_state=SystemState.ARMED, device_online=True, message="Lock released")
 
 
 def set_sentry_mode(mode: SentryState) -> Status:

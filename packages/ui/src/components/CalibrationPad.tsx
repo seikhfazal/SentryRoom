@@ -4,13 +4,14 @@ import { ControlButton } from "./ControlButton";
 export function CalibrationPad({
   onMove,
   onCenter,
-  disabled = false
+  disabled = false,
+  disabledTitle
 }: {
   onMove: (panDelta: number, tiltDelta: number) => void;
   onCenter: () => void;
   disabled?: boolean;
+  disabledTitle?: string;
 }) {
-  const disabledTitle = disabled ? "Backend unavailable in demo mode" : undefined;
   return (
     <div className="calibration-pad">
       <span />

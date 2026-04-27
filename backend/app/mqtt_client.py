@@ -32,7 +32,8 @@ class MqttClient:
 
     def start(self) -> None:
         settings = get_settings()
-        if settings.mock_mode or mqtt is None:
+        if not settings.mqtt_enabled or mqtt is None:
+            print("[mqtt-disabled] MQTT is disabled for this deployment mode.")
             return
         self._client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=settings.mqtt_client_id)
         self._client.connect_async(settings.mqtt_host, settings.mqtt_port, 60)
@@ -48,6 +49,9 @@ class MqttClient:
     def publish(self, key: str, payload: dict[str, Any] | None = None) -> None:
         topic = TOPICS[key]
         data = json.dumps(payload or {})
+        if not get_settings().mqtt_enabled:
+            print(f"[mock-mqtt disabled] {topic} {data}")
+            return
         if self._client and self.connected:
             self._client.publish(topic, data, qos=1)
         else:

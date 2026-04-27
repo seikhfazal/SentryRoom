@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from ..auth import require_auth
+from ..deployment_mode import control_message, log_public_demo_action
 from ..models import CalibrationSaveRequest, EventCreate, Severity
 from ..mqtt_client import mqtt_client
 from ..services import calibration_service, event_service
@@ -21,4 +22,5 @@ def save_calibration(payload: CalibrationSaveRequest, _token: str = Depends(requ
         event_service.log_event(EventCreate(severity=Severity.SAFETY, source="calibration", message=str(exc)))
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     mqtt_client.publish("sentry_calibrate", point)
-    return {"ok": True, "point": point}
+    log_public_demo_action("calibration", "save")
+    return {"ok": True, "message": control_message("Calibration point saved"), "point": point}

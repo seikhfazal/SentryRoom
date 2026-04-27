@@ -13,3 +13,11 @@ def test_manual_mist_requires_confirmation():
     headers = auth_headers(client)
     response = client.post("/api/mist/manual-test", headers=headers, json={"confirmation": False})
     assert response.status_code == 400
+
+
+def test_manual_mist_confirmed_is_mocked_in_public_demo():
+    client = get_client()
+    headers = auth_headers(client)
+    response = client.post("/api/mist/manual-test", headers=headers, json={"confirmation": True})
+    assert response.status_code == 200
+    assert response.json()["message"] == "Hardware control is disabled in public demo mode."

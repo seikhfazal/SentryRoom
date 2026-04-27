@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: sentinel-room-backend-demo
+    env: docker
+    rootDir: backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: SENTINEL_MODE
+        value: mock
+      - key: SENTINEL_MOCK_MODE
+        value: "true"
+      - key: SENTINEL_ENABLE_HARDWARE
+        value: "false"
+      - key: SENTINEL_ENABLE_MQTT
+        value: "false"
+      - key: SENTINEL_ALLOW_LAN
+        value: "false"
+      - key: SENTINEL_PUBLIC_DEMO
+        value: "true"
+      - key: SENTINEL_DB_PATH
+        value: ./sentinel.db
+      - key: SENTINEL_PIN
+        value: change-this
+      - key: SENTINEL_CORS_ORIGINS
+        value: "*"
+      - key: SENTINEL_HOST
+        value: 0.0.0.0
+      - key: SENTINEL_PORT
+        value: "8000"

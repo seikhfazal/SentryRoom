@@ -33,14 +33,24 @@ VITE_API_BASE_URL=http://localhost:8000
 VITE_WS_BASE_URL=ws://localhost:8000/ws/status
 ```
 
-Phone on the same trusted Wi-Fi:
+Online frontend plus online free mock/demo backend:
 
 ```env
-VITE_API_BASE_URL=http://192.168.x.x:8000
-VITE_WS_BASE_URL=ws://192.168.x.x:8000/ws/status
+VITE_API_BASE_URL=https://your-free-backend-url
+VITE_WS_BASE_URL=wss://your-free-backend-url/ws/status
 ```
 
-Deployed frontend:
+Use this only with a backend running:
+
+```env
+SENTINEL_MODE=mock
+SENTINEL_MOCK_MODE=true
+SENTINEL_ENABLE_HARDWARE=false
+SENTINEL_ENABLE_MQTT=false
+SENTINEL_PUBLIC_DEMO=true
+```
+
+Phone on the same trusted Wi-Fi:
 
 ```env
 VITE_API_BASE_URL=http://192.168.x.x:8000
@@ -69,7 +79,9 @@ For local phone testing through the Vite dev server, also add your PC web origin
 SENTINEL_CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,tauri://localhost,http://192.168.x.x:5173
 ```
 
-Important browser note: many HTTPS static hosts block calls to plain `http://192.168.x.x` because of browser mixed-content/private-network rules. If that happens, the deployed site still works in demo mode. For real controls, use the local LAN web app, or a private/free VPN address, or a carefully secured HTTPS tunnel.
+Important browser note: many HTTPS static hosts block calls to plain `http://192.168.x.x` because of browser mixed-content/private-network rules. If that happens, point the deployed frontend at an HTTPS online mock/demo backend. For real controls, use the local LAN web app or a private VPN address. Do not expose the backend publicly.
+
+Free backend deployment guide: `E:\SentinelRoom\docs\deployment_backend.md`.
 
 ## Cloudflare Pages Free Deployment
 
@@ -199,6 +211,14 @@ VITE_API_BASE_URL=http://localhost:8000
 VITE_WS_BASE_URL=ws://localhost:8000/ws/status
 ```
 
+For GitHub Pages plus free online mock backend, set the workflow values to:
+
+```env
+VITE_BASE_PATH=/SentryRoom/
+VITE_API_BASE_URL=https://your-free-backend-url
+VITE_WS_BASE_URL=wss://your-free-backend-url/ws/status
+```
+
 If the site is deployed at a custom GitHub Pages path, update `VITE_BASE_PATH` to match that path. A paid custom domain is not needed.
 
 ## Use The Website On A Phone
@@ -255,6 +275,23 @@ Works without the backend:
 
 Real hardware buttons are disabled while disconnected. Stop All stays visible, but shows `Backend unavailable` if it cannot send.
 
+## What Works With Online Mock Backend
+
+When the deployed frontend points at a free online mock/demo backend:
+
+- PIN login.
+- Mock arm/disarm.
+- Mock lock/unlock.
+- Mock sentry modes.
+- Mock calibration save.
+- Mock event logs.
+- Mock demo mode.
+- Mock Stop All.
+- WebSocket status.
+- Clear `Online Demo Mode - No hardware connected` style state from the backend.
+
+The online backend does not control ESP32/Arduino hardware and does not publish real MQTT commands.
+
 ## What Requires Local Backend And Hardware
 
 These require the local backend to be reachable:
@@ -284,6 +321,7 @@ Safety rules:
 
 - Do not expose the backend to the public internet by default.
 - Do not use public port forwarding.
+- Do not expose your hardware-control backend directly to the public internet.
 - Do not publish router ports for `8000`, `1883`, or the database.
 - Do not host the hardware-control backend on a paid cloud server.
 - Do not use a paid cloud database.

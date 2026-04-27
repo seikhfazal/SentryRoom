@@ -1,15 +1,18 @@
 :root {
-  --bg: #080b12;
-  --bg-2: #111827;
-  --panel: rgba(18, 27, 43, 0.72);
-  --panel-strong: rgba(24, 35, 54, 0.92);
-  --line: rgba(139, 162, 190, 0.22);
-  --text: #e8eef8;
-  --muted: #93a4b8;
-  --blue: #4aa3ff;
-  --cyan: #28d4c8;
-  --green: #54d67a;
-  --yellow: #ffd166;
-  --red: #ff4d5e;
-  --shadow: 0 18px 70px rgba(0, 0, 0, 0.35);
+  --bg: #030605;
+  --bg-2: #0c1110;
+  --panel: rgba(12, 18, 18, 0.78);
+  --panel-strong: rgba(15, 23, 23, 0.94);
+  --line: rgba(165, 255, 232, 0.2);
+  --line-strong: rgba(165, 255, 232, 0.36);
+  --text: #effff9;
+  --muted: #91aaa4;
+  --blue: #63b7ff;
+  --cyan: #2df4d0;
+  --green: #61f29b;
+  --yellow: #f5c15c;
+  --red: #ff5269;
+  --violet: #a88cff;
+  --shadow: 0 22px 76px rgba(0, 0, 0, 0.42);
+  --inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 42px rgba(45, 244, 208, 0.045);
 }

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, NavLink, Route, Routes, useLocation } from "react-router-dom";
-import { api } from "./api/client";
+import { LockKeyhole, LogOut, ShieldCheck } from "lucide-react";
+import { api, getToken } from "./api/client";
 import { connectStatusSocket } from "./api/websocket";
 import type { EventLog, Status } from "./api/types";
 import { AssistantDock } from "./components/AssistantDock";
 import { ConnectionStatus } from "./components/ConnectionStatus";
+import { LoginGate } from "./components/LoginGate";
 import { SystemBanner } from "./components/SystemBanner";
 import { Calibration } from "./pages/Calibration";
 import { Camera } from "./pages/Camera";
@@ -49,8 +51,12 @@ function Shell() {
   const [status, setStatus] = useState<Status>(fallbackStatus);
   const [events, setEvents] = useState<EventLog[]>([]);
   const [connected, setConnected] = useState(false);
+  const [authenticated, setAuthenticated] = useState(() => Boolean(getToken()));
+  const [previewMode, setPreviewMode] = useState(false);
   const currentPath = location.pathname.replace(/\/$/, "") || "/";
   const isMobileRoute = currentPath === "/mobile";
+  const locked = !authenticated && !previewMode;
+  const canControl = connected && authenticated;
 
   const refresh = () => {
     api.status().then((next) => { setStatus(next); setConnected(true); }).catch(() => setConnected(false));
@@ -68,27 +74,90 @@ function Shell() {
     return () => { window.clearTimeout(timer); socket?.close(); };
   }, []);
 
-  if (isMobileRoute) return <Routes><Route path="/mobile/*" element={<MobileControl status={status} refresh={refresh} connected={connected} />} /></Routes>;
+  useEffect(() => {
+    const syncAuth = () => setAuthenticated(Boolean(getToken()));
+    window.addEventListener("sentinel-room-auth-change", syncAuth);
+    return () => window.removeEventListener("sentinel-room-auth-change", syncAuth);
+  }, []);
+
+  const handleAuthenticated = () => {
+    setAuthenticated(true);
+    setPreviewMode(false);
+    refresh();
+  };
+
+  const lockConsole = () => {
+    api.logout().finally(() => {
+      setAuthenticated(false);
+      setPreviewMode(false);
+    });
+  };
+
+  if (locked) {
+    return (
+      <LoginGate
+        status={status}
+        connected={connected}
+        onAuthenticated={handleAuthenticated}
+        onPreview={!connected ? () => setPreviewMode(true) : undefined}
+        mobile={isMobileRoute}
+      />
+    );
+  }
+
+  if (isMobileRoute) {
+    return (
+      <Routes>
+        <Route path="/mobile/*" element={<MobileControl status={status} refresh={refresh} connected={connected} canControl={canControl} />} />
+      </Routes>
+    );
+  }
 
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div className="brand"><span className="brand-mark" /> Sentinel Room</div>
+        <div className="brand">
+          <span className="brand-mark" />
+          <div>
+            <strong>Sentinel Room</strong>
+            <small>Local security OS</small>
+          </div>
+        </div>
         <nav>{navItems.map((item) => <NavLink key={item.path} to={item.path} end={item.path === "/"}><item.icon size={17} /> {item.label}</NavLink>)}</nav>
       </aside>
       <main className="workspace">
         <header className="topbar">
+          <div className={`session-chip ${authenticated ? "unlocked" : "preview"}`}>
+            {authenticated ? <ShieldCheck size={15} /> : <LockKeyhole size={15} />}
+            {authenticated ? "Console unlocked" : "Preview mode"}
+          </div>
           <ConnectionStatus connected={connected} mockMode={status.mock_mode} />
+          <button className="control-button session-button" onClick={authenticated ? lockConsole : () => setPreviewMode(false)}>
+            {authenticated ? <LogOut size={16} /> : <LockKeyhole size={16} />}
+            {authenticated ? "Lock" : "Sign in"}
+          </button>
         </header>
         <AssistantDock />
-        <SystemBanner status={status} refresh={refresh} connected={connected} />
+        <SystemBanner status={status} refresh={refresh} connected={connected} canControl={canControl} />
         <Routes>
-          <Route path="/" element={<Dashboard status={status} events={events} refresh={refresh} connected={connected} />} />
+          <Route path="/" element={<Dashboard status={status} events={events} refresh={refresh} connected={connected} canControl={canControl} />} />
           <Route path="/camera" element={<Camera status={status} />} />
-          <Route path="/sentry" element={<Sentry status={status} refresh={refresh} connected={connected} />} />
-          <Route path="/calibration" element={<Calibration status={status} refresh={refresh} connected={connected} />} />
+          <Route path="/sentry" element={<Sentry status={status} refresh={refresh} connected={connected} canControl={canControl} />} />
+          <Route path="/calibration" element={<Calibration status={status} refresh={refresh} connected={connected} canControl={canControl} />} />
           <Route path="/events" element={<Events events={events} refresh={refresh} />} />
-          <Route path="/settings" element={<Settings status={status} connected={connected} />} />
+          <Route
+            path="/settings"
+            element={
+              <Settings
+                status={status}
+                connected={connected}
+                canControl={canControl}
+                authenticated={authenticated}
+                onLock={lockConsole}
+                onLoginRequest={() => setPreviewMode(false)}
+              />
+            }
+          />
         </Routes>
       </main>
       <nav className="bottom-nav">{navItems.slice(0, 6).map((item) => <NavLink key={item.path} to={item.path} end={item.path === "/"}><item.icon size={18} /><span>{item.label}</span></NavLink>)}</nav>

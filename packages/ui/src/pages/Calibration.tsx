@@ -4,18 +4,28 @@ import { api } from "../api/client";
 import { CalibrationPad } from "../components/CalibrationPad";
 import { ControlButton } from "../components/ControlButton";
 
-export function Calibration({ status, refresh, connected }: { status: Status; refresh: () => void; connected: boolean }) {
+export function Calibration({
+  status,
+  refresh,
+  connected,
+  canControl
+}: {
+  status: Status;
+  refresh: () => void;
+  connected: boolean;
+  canControl: boolean;
+}) {
   const [points, setPoints] = useState<CalibrationPoint[]>([]);
   const [pan, setPan] = useState(status.pan);
   const [tilt, setTilt] = useState(status.tilt);
-  const disabledTitle = connected ? undefined : "Backend unavailable in demo mode";
+  const disabledTitle = !connected ? "Backend unavailable in demo mode" : !canControl ? "Enter PIN to unlock controls" : undefined;
 
   useEffect(() => {
     api.calibration().then(setPoints).catch(() => setPoints([]));
   }, []);
 
   const move = (panDelta: number, tiltDelta: number) => {
-    if (!connected) return;
+    if (!canControl) return;
     const nextPan = Math.max(20, Math.min(160, pan + panDelta));
     const nextTilt = Math.max(40, Math.min(120, tilt + tiltDelta));
     setPan(nextPan);
@@ -28,10 +38,11 @@ export function Calibration({ status, refresh, connected }: { status: Status; re
       <section className="glass panel">
         <div className="panel-title">Calibration Pad</div>
         <CalibrationPad
-          disabled={!connected}
+          disabled={!canControl}
+          disabledTitle={disabledTitle}
           onMove={move}
           onCenter={() => {
-            if (!connected) return;
+            if (!canControl) return;
             setPan(90);
             setTilt(80);
             api.move(90, 80).then(refresh);
@@ -45,7 +56,7 @@ export function Calibration({ status, refresh, connected }: { status: Status; re
           {points.map((point) => (
             <button
               key={point.name}
-              disabled={!connected}
+              disabled={!canControl}
               title={disabledTitle}
               onClick={() => api.saveCalibration(point.name, pan, tilt).then(() => api.calibration().then(setPoints))}
             >

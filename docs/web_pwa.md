@@ -46,6 +46,23 @@ VITE_API_BASE_URL=http://localhost:8000
 VITE_WS_BASE_URL=ws://localhost:8000/ws/status
 ```
 
+Online frontend plus online free mock/demo backend:
+
+```env
+VITE_API_BASE_URL=https://your-free-backend-url
+VITE_WS_BASE_URL=wss://your-free-backend-url/ws/status
+```
+
+The online backend must run mock/demo mode:
+
+```env
+SENTINEL_MODE=mock
+SENTINEL_MOCK_MODE=true
+SENTINEL_ENABLE_HARDWARE=false
+SENTINEL_ENABLE_MQTT=false
+SENTINEL_PUBLIC_DEMO=true
+```
+
 Phone on same trusted Wi-Fi:
 
 ```env
@@ -55,8 +72,11 @@ VITE_WS_BASE_URL=ws://192.168.x.x:8000/ws/status
 
 If the backend is unreachable, the app shows `Demo Mode - No hardware connected`, keeps navigation available, disables real control buttons, and keeps Stop All visible with a backend-unavailable message.
 
+If the deployed PWA uses an online mock backend, it can test login, mock controls, demo state, event logs, and WebSocket status without real hardware. Free online demo data may reset.
+
 The camera page can store multiple camera source URLs in the browser. Use LAN camera URLs or private VPN URLs; do not expose camera feeds publicly.
 
 Do not expose hardware controls publicly. Do not use public port forwarding. Do not require paid hosting, paid APIs, paid UI kits, paid icons, paid fonts, paid cloud databases, paid tunnels, or paid domains.
 
-Full deployment guide: `docs/deployment_web.md`.
+Full web guide: `docs/deployment_web.md`.
+Backend guide: `docs/deployment_backend.md`.

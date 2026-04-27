@@ -1,6 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
-from pydantic import Field
+from typing import Literal
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -8,8 +9,12 @@ class Settings(BaseSettings):
     app_name: str = Field(default="Sentinel Room", validation_alias="SENTINEL_APP_NAME")
     env: str = Field(default="dev", validation_alias="SENTINEL_ENV")
     db_path: str = Field(default="./sentinel_room.db", validation_alias="SENTINEL_DB_PATH")
+    mode: Literal["mock", "hardware"] = Field(default="mock", validation_alias="SENTINEL_MODE")
     mock_mode: bool = Field(default=True, validation_alias="SENTINEL_MOCK_MODE")
-    bind_host: str = Field(default="127.0.0.1", validation_alias="SENTINEL_BIND_HOST")
+    enable_hardware: bool = Field(default=False, validation_alias="SENTINEL_ENABLE_HARDWARE")
+    enable_mqtt: bool = Field(default=False, validation_alias="SENTINEL_ENABLE_MQTT")
+    public_demo: bool = Field(default=False, validation_alias="SENTINEL_PUBLIC_DEMO")
+    bind_host: str = Field(default="127.0.0.1", validation_alias=AliasChoices("SENTINEL_BIND_HOST", "SENTINEL_HOST"))
     port: int = Field(default=8000, validation_alias="SENTINEL_PORT")
     allow_lan: bool = Field(default=False, validation_alias="SENTINEL_ALLOW_LAN")
     pin: str = Field(default="1234", validation_alias="SENTINEL_PIN")
@@ -39,7 +44,24 @@ class Settings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> list[str]:
-        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+        origins = [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+        return ["*"] if "*" in origins else origins
+
+    @property
+    def is_mock_mode(self) -> bool:
+        return self.mode == "mock" or self.public_demo
+
+    @property
+    def hardware_enabled(self) -> bool:
+        return self.mode == "hardware" and self.enable_hardware and not self.public_demo
+
+    @property
+    def mqtt_enabled(self) -> bool:
+        return self.hardware_enabled and self.enable_mqtt
+
+    @property
+    def safe_for_public_demo(self) -> bool:
+        return self.mode == "mock" and self.public_demo and not self.hardware_enabled and not self.mqtt_enabled
 
 
 @lru_cache

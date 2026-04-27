@@ -7,7 +7,7 @@ from .config import get_settings
 from .database import init_db
 from .mock_device import seed_mock_device
 from .mqtt_client import mqtt_client
-from .routes import access, auth, calibration, demo, events, health, mobile, network, sentry, status, stop_all, vision
+from .routes import access, auth, calibration, demo, deployment, events, health, mobile, network, sentry, status, stop_all, vision
 from .services import state_service
 from .websocket_manager import ws_manager
 
@@ -18,8 +18,10 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     init_db()
-    if settings.mock_mode:
+    if settings.is_mock_mode:
         seed_mock_device()
+    if settings.public_demo and settings.mode == "hardware":
+        print("WARNING: SENTINEL_PUBLIC_DEMO=true disables hardware control even when SENTINEL_MODE=hardware.")
     mqtt_client.start()
     info = network.lan_ip()
     print(f"Sentinel Room backend: http://127.0.0.1:{settings.port}")
@@ -45,6 +47,7 @@ for router in [
     status.router,
     events.router,
     auth.router,
+    deployment.router,
     sentry.router,
     calibration.router,
     access.router,

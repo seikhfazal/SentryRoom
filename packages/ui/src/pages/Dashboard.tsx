@@ -1,4 +1,4 @@
-import { Activity, DoorOpen, Lightbulb, Siren, Wifi } from "lucide-react";
+import { Activity, DoorOpen, Lightbulb, Play, ShieldAlert, ShieldCheck, ShieldOff, Siren, Wifi } from "lucide-react";
 import type { EventLog, Status } from "../api/types";
 import { api } from "../api/client";
 import { EventTimeline } from "../components/EventTimeline";
@@ -7,11 +7,27 @@ import { SentryPanel } from "../components/SentryPanel";
 import { StatusCard } from "../components/StatusCard";
 import { ControlButton } from "../components/ControlButton";
 
-export function Dashboard({ status, events, refresh, connected }: { status: Status; events: EventLog[]; refresh: () => void; connected: boolean }) {
-  const disabledTitle = connected ? undefined : "Backend unavailable in demo mode";
+export function Dashboard({
+  status,
+  events,
+  refresh,
+  connected,
+  canControl
+}: {
+  status: Status;
+  events: EventLog[];
+  refresh: () => void;
+  connected: boolean;
+  canControl: boolean;
+}) {
+  const disabledTitle = !connected ? "Backend unavailable in demo mode" : !canControl ? "Enter PIN to unlock controls" : undefined;
   const stopAll = () => {
     if (!connected) {
       alert("Backend unavailable. Stop All could not be sent.");
+      return;
+    }
+    if (!canControl) {
+      alert("Enter the local PIN to unlock controls before sending Stop All.");
       return;
     }
     api.stopAll().then(refresh).catch(() => alert("Backend unavailable. Stop All could not be sent."));
@@ -42,13 +58,13 @@ export function Dashboard({ status, events, refresh, connected }: { status: Stat
       <section className="glass panel">
         <div className="panel-title"><Siren size={18} /> Quick Actions</div>
         <div className="button-row">
-          <ControlButton tone="safe" onClick={() => api.arm().then(refresh)} disabled={!connected} title={disabledTitle}>Arm</ControlButton>
-          <ControlButton onClick={() => api.disarm().then(refresh)} disabled={!connected} title={disabledTitle}>Disarm</ControlButton>
-          <ControlButton tone="alert" onClick={() => api.demoStart().then(refresh)} disabled={!connected} title={disabledTitle}>Demo Mode</ControlButton>
-          <ControlButton tone="danger" onClick={stopAll}>Stop All</ControlButton>
+          <ControlButton tone="safe" onClick={() => api.arm().then(refresh)} disabled={!canControl} title={disabledTitle}><ShieldCheck size={16} /> Arm</ControlButton>
+          <ControlButton onClick={() => api.disarm().then(refresh)} disabled={!canControl} title={disabledTitle}><ShieldOff size={16} /> Disarm</ControlButton>
+          <ControlButton tone="alert" onClick={() => api.demoStart().then(refresh)} disabled={!canControl} title={disabledTitle}><Play size={16} /> Demo Mode</ControlButton>
+          <ControlButton tone="danger" onClick={stopAll} title={disabledTitle}><ShieldAlert size={16} /> Stop All</ControlButton>
         </div>
       </section>
-      <LockdownPanel connected={connected} />
+      <LockdownPanel connected={connected} canControl={canControl} />
       <EventTimeline events={events} />
     </div>
   );
